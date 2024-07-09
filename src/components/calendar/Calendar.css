@@ -1,0 +1,90 @@
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.calendar-line {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  overflow: hidden;
+}
+
+.calendar-button {
+  padding: 15px;
+  border: 0;
+  color: rgb(25, 25, 201);
+  background: var(--white);
+}
+
+.calendar-button:hover {
+  background: var(--accent-2);
+  color: rgb(25, 25, 201);
+  cursor: pointer;
+}
+
+.calendar {
+  display: inline-block;
+}
+
+header {
+  margin: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  padding-left: 20px;
+}
+
+.header-display {
+  display: flex;
+  align-items: center;
+}
+
+.header-display p {
+  color: var(--accent);
+  margin: 5px;
+  font-size: 1.2rem;
+  word-spacing: 0.5rem;
+}
+
+.days,
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin: auto;
+  padding: 0 20px;
+  justify-content: space-between;
+}
+
+.week div,
+.days div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2rem;
+  width: 3em;
+  border-radius: 100%;
+}
+
+.days div:hover {
+  background: var(--accent-2);
+  color: rgb(25, 25, 201);
+  cursor: pointer;
+}
+
+.week div {
+  opacity: 0.5;
+}
+
+.selected {
+  background-color: var(--accent);
+  color: var(--white);
+  pointer-events: none;
+}
+
+.disabled {
+  color: rgb(204, 204, 204);
+  pointer-events: none;
+}

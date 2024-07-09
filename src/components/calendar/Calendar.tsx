@@ -1,0 +1,47 @@
+import { useEffect, useState } from 'react';
+import './Calendar.css';
+import CalendarMonth from './CalendarMonth';
+
+export default function Calendar({ date, handleDateClick }: { date: Date, handleDateClick: (date: Date) => void }) {
+  const today = new Date();
+
+  const [calendarMonthCount, setCalendarMounthCount] = useState(0)
+  const [month, setMount] = useState(today.getMonth())
+
+  useEffect(() => {
+    const updateCalendarMountCount = () => {
+      const height = window.innerHeight - 90
+      const calendarMonthSize = 264;
+      const newCalendarMounthCount = Math.floor(height / calendarMonthSize)
+      setCalendarMounthCount(newCalendarMounthCount)
+    }
+
+    // Init
+    updateCalendarMountCount()
+
+    // update on window resize
+    window.addEventListener('resize', updateCalendarMountCount)
+
+    // cleanup
+    return () => {
+      window.removeEventListener('resize', updateCalendarMountCount)
+    }
+  }, [month])
+
+  let year = today.getFullYear();
+
+  const months = Array.from({ length: calendarMonthCount }, (_, index) => (
+    <CalendarMonth key={month - (calendarMonthCount - index - 1)} today={today} year={year} month={month - (calendarMonthCount - index - 1)} selectedDate={date} handleDateClick={handleDateClick} />
+  ))
+
+  return (
+    <div className='calendar-container'>
+      <button className='calendar-button' onClick={() => setMount(month - 1)}>▲</button>
+      {months}
+      <button className='calendar-button' onClick={() => {
+        if (month < today.getMonth())
+          setMount(month + 1)
+      }}>▼</button>
+    </div>
+  )
+}

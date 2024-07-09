@@ -1,9 +1,12 @@
 import "leaflet/dist/leaflet.css";
 import * as L from "leaflet";
+import 'leaflet.timeline';
+import 'leaflet-polylinedecorator';
 
 export class MapWidget {
   private map: L.Map;
   private layer: L.TileLayer | null = null;
+  private tracks: L.Polyline[] = [];
 
   constructor(domNode: HTMLElement) {
     this.map = L.map(domNode, {
@@ -16,7 +19,6 @@ export class MapWidget {
       // touchZoom: false,
       // zoomSnap: 0.1,
     });
-    // this.setLayer(availableMapLayers[0].id);
     this.map.setView([65.505, 12], 5);
   }
 
@@ -54,5 +56,58 @@ export class MapWidget {
     }
 
     this.layer.addTo(this.map);
+  }
+
+  addTrackLine(shipTrack: any[][]) {
+    this.removeAllTrackLines()
+
+    let skippNextPoint = false;
+    for (let i = 0; i < shipTrack.length - 1; i++) {
+      if (skippNextPoint) {
+        i++
+        skippNextPoint = false
+      }
+
+      const start = shipTrack[i]
+      let end = shipTrack[i + 1]
+
+      // if distance traveled is -99 or speed is 100 knots or more
+      if (end[9] == -99 || end[7] >= 100) {
+        end = shipTrack[i + 2]
+        skippNextPoint = true
+      }
+
+      let color = 'orange';
+      // if (start[5] > 10) {
+      //   color = 'orange';
+      // }
+      // if (start[5] > 20) {
+      //   color = 'red';
+      // }
+
+      const polyline = L.polyline([
+        [start[3], start[2]],
+        [end[3], end[2]]
+      ], { color }).addTo(this.map)
+
+      this.tracks.push(polyline)
+
+      polyline.on('mouseover', (e) => {
+        L.popup()
+          .setLatLng(e.latlng)
+          .setContent(`
+            <b>Speed: </b>${start[5]} knots<br>
+            <b>Calculated Speed: </b>${start[7]} kph<br>
+            <b>Time: </b>${new Date(start[1] as string).toLocaleString()}<br>
+            <b>Distance: </b>${start[9]}
+          `)
+          .openOn(this.map)
+      })
+    }
+  }
+
+  removeAllTrackLines() {
+    this.tracks.forEach(track => this.map.removeLayer(track))
+    this.tracks = []
   }
 }
