@@ -1,7 +1,5 @@
 import "leaflet/dist/leaflet.css";
 import * as L from "leaflet";
-import 'leaflet.timeline';
-import 'leaflet-polylinedecorator';
 
 export class MapWidget {
   private map: L.Map;
