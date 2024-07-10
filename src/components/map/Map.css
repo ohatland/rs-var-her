@@ -24,3 +24,14 @@
   padding: 2px;
   z-index: 1000;
 } 
+
+.timestamp-marker {
+  background-color: white;
+  padding: 4px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 22px;
+  color: #000;
+  font-weight: 500;
+  /* text-shadow: 0 0 15px white; */
+}
