@@ -8,8 +8,7 @@ export class MapWidget {
   private map: L.Map;
   private layer: L.TileLayer | null = null;
   private tracks: L.Polyline[] = [];
-  private markers: L.Marker[] = [];
-  private icons: L.Icon[] = [];
+  private markers: [L.Marker, L.Marker][] = []
 
   private shipIcon = L.icon({
     iconUrl: 'src/assets/ship.png',
@@ -25,6 +24,7 @@ export class MapWidget {
     });
     this.map.setView([65.505, 12], 5);
     nauticalScale({ nautic: true, metric: false, imperial: false, maxWidth: 300 }).addTo(this.map);
+    this.map.on('zoomend', () => { this.updateMarkerVisibility() });
   }
 
   setLayer(id: string): void {
@@ -36,7 +36,7 @@ export class MapWidget {
       this.layer = L.tileLayer(
         "http://{s}.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
-          minZoom: 1,
+          minZoom: 5,
           maxZoom: 18,
           subdomains: ["server", "services"],
           attribution:
@@ -45,6 +45,7 @@ export class MapWidget {
       );
     } else if (id === "osm") {
       this.layer = L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+        minZoom: 5,
         attribution:
           '<a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       });
@@ -52,6 +53,7 @@ export class MapWidget {
       this.layer = L.tileLayer(
         `https://opencache{s}.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=${id}&zoom={z}&x={x}&y={y}`,
         {
+          minZoom: 5,
           maxZoom: 20,
           detectRetina: true,
           attribution: '<a href="https://www.kartverket.no/">Kartverket</a>',
@@ -115,6 +117,8 @@ export class MapWidget {
       const lastPositionLng = shipTrack[shipTrack.length - 1][2]
       this.map.setView([lastPositionLat, lastPositionLng], 12)
     }
+
+    this.updateMarkerVisibility();
   }
 
   addMarker(lat: number, lng: number, timestamp: Date, heading: number, speed: number) {
@@ -123,8 +127,7 @@ export class MapWidget {
       //@ts-ignore
       rotationAngle: heading,
       icon: this.shipIcon
-    }).addTo(this.map)
-    this.markers.push(shipMarker)
+    })
     shipMarker.on('click', (e) => this.onPolylineClick(e, heading, speed, timestamp));
 
     const formattedTime = timestamp.toLocaleString("no", {
@@ -136,12 +139,65 @@ export class MapWidget {
       className: 'timestamp-marker',
       html: `<div>${formattedTime}</div>`,
       iconSize: [60, 30],
-      iconAnchor: [32, -20]
+      iconAnchor: [36, -20]
     });
 
-    const timeMarker = L.marker([lat, lng], { icon }).addTo(this.map);
-    this.markers.push(timeMarker);
+    const timeMarker = L.marker([lat, lng], { icon })
+
+    this.markers.push([shipMarker, timeMarker])
     timeMarker.on('click', (e) => this.onPolylineClick(e, heading, speed, timestamp));
+  }
+
+  updateMarkerVisibility() {
+    try {
+      var zoom = this.map.getZoom();
+      var minimumValue: number;
+
+      switch (zoom) {
+        case 20: minimumValue = 0; break;
+        case 19: minimumValue = 0.01; break;
+        case 18: minimumValue = 0.02; break;
+        case 17: minimumValue = 0.05; break;
+        case 16: minimumValue = 0.08; break;
+        case 15: minimumValue = 0.1; break;
+        case 14: minimumValue = 0.3; break;
+        case 13: minimumValue = 0.5; break;
+        case 12: minimumValue = 1; break;
+        case 11: minimumValue = 2.5; break;
+        case 10: minimumValue = 5; break;
+        case 9: minimumValue = 10; break;
+        case 8: minimumValue = 20; break;
+        case 7: minimumValue = 40; break;
+        case 6: minimumValue = 80; break;
+        case 5: minimumValue = 100; break;
+
+        default: minimumValue = 0.01; break;
+      }
+
+      var displayedMarkers: [L.Marker<any>, L.Marker<any>][] = [];
+
+      this.markers.forEach((marker) => {
+        var shipMarker = marker[0]
+        var timeMarker = marker[1];
+        var latlng = timeMarker.getLatLng();
+        var tooClose = displayedMarkers.some((displayedMarker) => {
+          var displayedLatLng = displayedMarker[1].getLatLng();
+          return this.getDistance(latlng.lat, latlng.lng, displayedLatLng.lat, displayedLatLng.lng) < minimumValue
+        })
+
+        if (!tooClose) {
+          shipMarker.addTo(this.map)
+          timeMarker.addTo(this.map)
+          displayedMarkers.push([shipMarker, timeMarker])
+        } else {
+          this.map.removeLayer(shipMarker)
+          this.map.removeLayer(timeMarker)
+        }
+      })
+    } catch (error) {
+      console.error(error)
+    }
+
   }
 
   onPolylineClick(e: L.LeafletMouseEvent, heading: number, speed: number, timestamp: Date) {
@@ -163,10 +219,21 @@ export class MapWidget {
     this.tracks.forEach(track => this.map.removeLayer(track))
     this.tracks = []
 
-    this.markers.forEach(marker => this.map.removeLayer(marker))
+    this.markers.forEach(marker => {
+      this.map.removeLayer(marker[0])
+      this.map.removeLayer(marker[1])
+    })
     this.markers = []
+  }
 
-    this.icons.forEach(icon => this.map.removeLayer(icon))
-    this.icons = []
+  getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    var R = 6371; // Radius of the Earth in km
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a =
+      0.5 - Math.cos(dLat) / 2 +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      (1 - Math.cos(dLon)) / 2;
+    return R * 2 * Math.asin(Math.sqrt(a));
   }
 }
