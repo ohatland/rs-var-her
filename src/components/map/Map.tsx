@@ -21,14 +21,18 @@ export default function Map({ ship, shipTrack, handleShipSelect }: { ship: Ship,
 
   }, [mapLayer]);
 
-  if (mapRef.current !== null && shipTrack !== null) {
-    mapRef.current.addTrackLine(shipTrack.posisjonData)
-  }
+  useEffect(() => {
+    if (mapRef.current !== null && shipTrack !== null) {
+      mapRef.current.addTrackLine(shipTrack.posisjonData)
+    }
+  }, [shipTrack])
+
 
   return (
     <div className="map-container">
       <div className="map-selector">
         <select
+          className="select-option"
           value={mapLayer}
           onChange={(e) => setMapLayer(e.target.value)}
         >
@@ -46,6 +50,7 @@ export default function Map({ ship, shipTrack, handleShipSelect }: { ship: Ship,
       </div>
       <div className="ship-selector">
         <select
+          className="select-option"
           value={ship.nr}
           onChange={(e) => handleShipSelect(e.target.value)}
         >

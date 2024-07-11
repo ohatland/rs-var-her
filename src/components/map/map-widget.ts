@@ -109,6 +109,12 @@ export class MapWidget {
 
       polyline.on('click', (e) => this.onPolylineClick(e, heading, speed, timestamp));
     }
+
+    if (shipTrack.length > 0) {
+      const lastPositionLat = shipTrack[shipTrack.length - 1][3]
+      const lastPositionLng = shipTrack[shipTrack.length - 1][2]
+      this.map.setView([lastPositionLat, lastPositionLng], 12)
+    }
   }
 
   addMarker(lat: number, lng: number, timestamp: Date, heading: number, speed: number) {
@@ -140,17 +146,17 @@ export class MapWidget {
 
   onPolylineClick(e: L.LeafletMouseEvent, heading: number, speed: number, timestamp: Date) {
     L.popup()
-        .setLatLng(e.latlng)
-        .setContent(`
+      .setLatLng(e.latlng)
+      .setContent(`
           <b>COG: </b>${Math.round(heading).toString().padStart(3, '0')}°<br>
           <b>SOG: </b>${speed} knots<br>
           <b>Time: </b>${timestamp.toLocaleString("no", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit"
-        })}<br>
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      })}<br>
         `)
-        .openOn(this.map)
+      .openOn(this.map)
   }
 
   removeAllTrackLines() {

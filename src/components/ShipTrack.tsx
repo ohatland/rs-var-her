@@ -25,7 +25,6 @@ export default function ShipTrack() {
   };
 
   const handleShipSelect = (shipNr: string) => {
-    console.log(shipNr)
     const ship = allShips.find((ship) => ship.nr === parseInt(shipNr))
     setShip(ship!)
   }
