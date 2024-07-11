@@ -11,7 +11,7 @@ export class MapWidget {
   private markers: [L.Marker, L.Marker][] = []
 
   private shipIcon = L.icon({
-    iconUrl: 'src/assets/ship.png',
+    iconUrl: '/ship.png',
 
     iconSize: [16, 16],
     iconAnchor: [8, 10]
@@ -34,7 +34,7 @@ export class MapWidget {
 
     if (id === "satellitt") {
       this.layer = L.tileLayer(
-        "http://{s}.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        "https://{s}.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
           minZoom: 5,
           maxZoom: 18,
@@ -44,7 +44,7 @@ export class MapWidget {
         }
       );
     } else if (id === "osm") {
-      this.layer = L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+      this.layer = L.tileLayer("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
         minZoom: 5,
         attribution:
           '<a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
