@@ -3,6 +3,7 @@ import * as L from "leaflet";
 //@ts-ignore
 import { nauticalScale } from './leaflet/NauticalScaleControl';
 import './leaflet/RotatedMarker';
+import { Position } from "../../data/fetchPosition";
 
 export class MapWidget {
   private map: L.Map;
@@ -65,7 +66,7 @@ export class MapWidget {
     this.layer.addTo(this.map);
   }
 
-  addTrackLine(shipTrack: any[][]) {
+  addTrackLine(shipTrack: Position[]) {
     this.removeAllTrackLines()
 
     let skippNextPoint = false;
@@ -76,26 +77,16 @@ export class MapWidget {
         skippNextPoint = false
       }
 
-      const start = shipTrack[i]
-      let end = shipTrack[i + 1]
+      const point = shipTrack[i]
+      let nextPoint = shipTrack[i + 1]
 
-      // if distance traveled is -99 or speed is 100 knots or more
-      if (end[9] == -99 || end[7] >= 100) {
-        end = shipTrack[i + 2]
-        skippNextPoint = true
-      }
-
-      const timestamp = new Date(start[1] + 'z')
-      const lat = start[3]
-      const lng = start[2]
-      const heading = start[4]
-      const speed = start[5]
+      const timestamp = new Date(point.timestamp)
 
       // marker
 
       // Only draw one point every minute
       if (lastMinute !== timestamp.getMinutes()) {
-        this.addMarker(lat, lng, timestamp, heading, speed);
+        this.addMarker(point.latitude, point.longitude, timestamp, point.courseOverGround, point.speedOverGround);
         lastMinute = timestamp.getMinutes()
       }
 
@@ -103,18 +94,18 @@ export class MapWidget {
       let color = 'orange';
 
       const polyline = L.polyline([
-        [start[3], start[2]],
-        [end[3], end[2]]
+        [point.latitude, point.longitude],
+        [nextPoint.latitude, nextPoint.longitude]
       ], { color, weight: 5 }).addTo(this.map)
 
       this.tracks.push(polyline)
 
-      polyline.on('click', (e) => this.onPolylineClick(e, heading, speed, timestamp));
+      polyline.on('click', (e) => this.onPolylineClick(e, point.courseOverGround, point.speedOverGround, timestamp));
     }
 
     if (shipTrack.length > 0) {
-      const lastPositionLat = shipTrack[shipTrack.length - 1][3]
-      const lastPositionLng = shipTrack[shipTrack.length - 1][2]
+      const lastPositionLat = shipTrack[shipTrack.length - 1].latitude
+      const lastPositionLng = shipTrack[shipTrack.length - 1].longitude
       this.map.setView([lastPositionLat, lastPositionLng], 12)
     }
 

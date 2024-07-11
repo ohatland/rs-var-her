@@ -23,7 +23,7 @@ export default function Map({ ship, shipTrack, handleShipSelect }: { ship: Ship,
 
   useEffect(() => {
     if (mapRef.current !== null && shipTrack !== null) {
-      mapRef.current.addTrackLine(shipTrack.posisjonData)
+      mapRef.current.addTrackLine(shipTrack.posisjons)
     }
   }, [shipTrack])
 
