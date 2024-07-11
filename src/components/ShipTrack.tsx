@@ -3,6 +3,7 @@ import { allShips, Ship } from "../data/fartoy"
 import { fetchPositions, ShipPosition } from "../data/fetchPosition"
 import Map from "./map/Map"
 import Calendar from "./calendar/Calendar"
+import './ShipTrack.css'
 
 export default function ShipTrack() {
   const [ship, setShip] = useState<Ship>(allShips[31])
@@ -12,12 +13,16 @@ export default function ShipTrack() {
     return date
   })
   const [shipTrack, setShipTrack] = useState<ShipPosition | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
     const shipTrackStart = parseDateToKartverketTimeFormat(date)
     const shipTrackEnd = parseDateToKartverketTimeFormat(new Date(new Date(date).setDate(date.getDate() + 1))) // the next day
 
-    fetchPositions(shipTrackStart, shipTrackEnd, ship).then(result => setShipTrack(result))
+    setLoading(true)
+    fetchPositions(shipTrackStart, shipTrackEnd, ship)
+    .then(result => setShipTrack(result))
+    .finally(() => setLoading(false))
   }, [ship, date])
 
   const handleDateClick = (date: Date) => {
@@ -31,6 +36,7 @@ export default function ShipTrack() {
 
   return (
     <main>
+      {loading ? <div className="loader"></div> : <></>}
       <Calendar date={date} handleDateClick={handleDateClick} />
       <Map ship={ship} shipTrack={shipTrack} handleShipSelect={handleShipSelect} />
     </main>

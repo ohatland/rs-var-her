@@ -16,7 +16,6 @@ export const fetchPositions = async (start: string, end: string, ship: Ship): Pr
   });
 
   const data = await response.json();
-  console.log(data)
   if (data.success) {
     return {
       ship,
