@@ -118,17 +118,31 @@ async function fetchFromBarenswatchForDate(date: Date, ship: Ship): Promise<Ship
 
 async function fetchFromKystdatahuset(date: Date, ship: Ship): Promise<ShipPosition> {
   try {
-    const response = await fetch('https://kystdatahuset.no/ws/api/ais/positions/for-mmsi-date', {
+    const day1 = new Date(date)
+    day1.setDate(day1.getDate() - 1)
+    const day2 = date
+
+    const responseDayOne = await fetch('https://kystdatahuset.no/ws/api/ais/positions/for-mmsi-date', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ mmsi: ship.mmsi, date: parseDateToKartverketTimeFormat(date) }),
+      body: JSON.stringify({ mmsi: ship.mmsi, date: parseDateToKartverketTimeFormat(day1) }),
     });
+    const dataDayOne = await responseDayOne.json();
+    const parsedPositionsDayOne = transformResponseFromKystdatahuset(dataDayOne)
+    
+    const responseDayTwo = await fetch('https://kystdatahuset.no/ws/api/ais/positions/for-mmsi-date', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ mmsi: ship.mmsi, date: parseDateToKartverketTimeFormat(day2) }),
+    });
+    const dataDayTwo = await responseDayTwo.json();
+    const parsedPositionsDayTwo = transformResponseFromKystdatahuset(dataDayTwo)
 
-    const data = await response.json();
-    const parsedPositions = transformResponseFromKystdatahuset(data)
-
+    const parsedPositions = filterOutPositionsForOneDate(parsedPositionsDayOne, parsedPositionsDayTwo, date)
     return {
       ship,
       posisjons: parsedPositions
@@ -154,14 +168,35 @@ function filterOutPositionsForYesterday(posisjons: Position[]) : Position[] {
   return arr
 }
 
+// Problem: Kartverket returns all positions for a date, with utc time, not local time, so midnight is off
+function filterOutPositionsForOneDate(positionDay1: Position[], positionDay2: Position[], date: Date) : Position[] {
+  var arr: Position[] = []
+  
+  positionDay2.forEach(position => {
+    const timestamp = new Date(position.timestamp)
+    if (timestamp.getDate() === date.getDate()) {
+      arr.push(position)
+    }
+  })
+
+  positionDay1.forEach(position => {
+    const timestamp = new Date(position.timestamp)
+    if (timestamp.getDate() === date.getDate()) {
+      arr.push(position)
+    }
+  })
+
+  return arr
+}
+
 function transformResponseFromKystdatahuset(arr: KystdatahusetResponse[]): Position[] {
   var positions: Position[] = []
 
-  for (var i = 0; i < arr.length; i++) {
+  for (var i = (arr.length - 1); i > -1; i--) {
     // clean up dataset
     // if distance traveled is negative or speed is 100 knots or more
     if (arr[i].dist_prevpoint < 0 || arr[i].calc_speed >= 100) {
-      i++; // skip point
+      i--; // skip point
     } else {
       positions.push({
         timestamp: arr[i].date_time_utc,
