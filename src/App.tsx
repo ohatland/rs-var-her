@@ -1,9 +1,7 @@
-import ShipTrack from "./components/ShipTrack";
+import ShipTrack from './components/ShipTrack';
 
 function App() {
-  return (
-    < ShipTrack />
-  );
+  return <ShipTrack />;
 }
 
 export default App;
