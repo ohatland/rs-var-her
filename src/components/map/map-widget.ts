@@ -153,7 +153,7 @@ export class MapWidget {
         case 15: minimumValue = 0.1; break;
         case 14: minimumValue = 0.3; break;
         case 13: minimumValue = 0.5; break;
-        case 12: minimumValue = 1; break;
+        case 12: minimumValue = 1.5; break;
         case 11: minimumValue = 2.5; break;
         case 10: minimumValue = 5; break;
         case 9: minimumValue = 10; break;
