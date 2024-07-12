@@ -76,10 +76,11 @@ async function fetchFromBarenswatchForToday(ship: Ship): Promise<ShipPosition> {
     
     const data = await response.json();
     const parsedPositions = transformResponseFromBarentsWatch(data)
+    const filteredParsedPositions = filterOutPositionsForYesterday(parsedPositions)
 
     return {
       ship,
-      posisjons: parsedPositions
+      posisjons: filteredParsedPositions
     }
   } catch (error) {
     console.error(error)
@@ -89,7 +90,6 @@ async function fetchFromBarenswatchForToday(ship: Ship): Promise<ShipPosition> {
 
 async function fetchFromBarenswatchForDate(date: Date, ship: Ship): Promise<ShipPosition> {
   try {
-    // const token = await authBarenswatch()
     const fromDateEncoded = encodeURIComponent(date.toISOString())
     const toDate = new Date(date)
     toDate.setDate(toDate.getDate() + 1)
@@ -116,34 +116,6 @@ async function fetchFromBarenswatchForDate(date: Date, ship: Ship): Promise<Ship
   }
 }
 
-// async function authBarenswatch(): Promise<BarentsWatchTokenResponse> {
-//   try {
-//     const clientId = import.meta.env.VITE_BARENTSWATCH_CLIENT_ID;
-//     const clientSecret = import.meta.env.VITE_BARENTSWATCH_CLIENT_SECRET;
-
-
-//     const params = new URLSearchParams();
-//     params.append('client_id', clientId!);
-//     params.append('client_secret', clientSecret!);
-//     params.append('scope', 'ais');
-//     params.append('grant_type', 'client_credentials');
-
-//     const response = await fetch('https://id.barentswatch.no/connect/token', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/x-www-form-urlencoded',
-//       },
-//       body: params.toString(),
-//     });
-
-//     const data = await response.json();
-//     return data
-
-//   } catch (error) {
-//     throw new Error('Failed to authenticate against BarentsWatch');
-//   }
-// }
-
 async function fetchFromKystdatahuset(date: Date, ship: Ship): Promise<ShipPosition> {
   try {
     const response = await fetch('https://kystdatahuset.no/ws/api/ais/positions/for-mmsi-date', {
@@ -164,6 +136,22 @@ async function fetchFromKystdatahuset(date: Date, ship: Ship): Promise<ShipPosit
   } catch (error) {
     throw new Error('Failed to fetch data');
   }
+}
+
+// Problem: BarentsWatch returns positions for the last 24 hours, not only for today
+function filterOutPositionsForYesterday(posisjons: Position[]) : Position[] {
+  const today = new Date()
+
+  var arr: Position[] = []
+  
+  posisjons.forEach(position => {
+    const date = new Date(position.timestamp)
+    if (date.getDate() === today.getDate()) {
+      arr.push(position)
+    }
+  })
+
+  return arr
 }
 
 function transformResponseFromKystdatahuset(arr: KystdatahusetResponse[]): Position[] {
