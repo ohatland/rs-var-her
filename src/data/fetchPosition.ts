@@ -65,10 +65,9 @@ export const fetchPositions = async (date: Date, ship: Ship): Promise<ShipPositi
 };
 
 async function fetchFromBarenswatchForToday(ship: Ship): Promise<ShipPosition> {
-  try {
-    // const token = await authBarenswatch()
-    
-    const response = await fetch(`https://barentswatch-ais-proxy-b8ewbryyt-hatland87s-projects.vercel.app/api/for-today/${ship.mmsi}`, {
+  try {    
+    const response = await fetch(`https://barentswatch-ais-proxy-seven.vercel.app/api/for-today/${ship.mmsi}`, {
+    // const response = await fetch(`http://localhost:3000/api/for-today/${ship.mmsi}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -96,7 +95,8 @@ async function fetchFromBarenswatchForDate(date: Date, ship: Ship): Promise<Ship
     toDate.setDate(toDate.getDate() + 1)
     const toDateEncoded = encodeURIComponent(toDate.toISOString())
 
-    const response = await fetch(`https://barentswatch-ais-proxy-b8ewbryyt-hatland87s-projects.vercel.app/api/for-date/${ship.mmsi}/${fromDateEncoded}/${toDateEncoded}`, {
+    const response = await fetch(`https://barentswatch-ais-proxy-seven.vercel.app/api/for-date/${ship.mmsi}/${fromDateEncoded}/${toDateEncoded}`, {
+    // const response = await fetch(`http://localhost:3000/api/for-date/${ship.mmsi}/${fromDateEncoded}/${toDateEncoded}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
