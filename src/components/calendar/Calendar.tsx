@@ -41,9 +41,19 @@ export default function Calendar({ date, handleDateClick }: { date: Date; handle
     />
   ));
 
+  const handleScroll = (event: any) => {
+    if (event.deltaY < 0) {
+      if (month >= -222) setMount(month - 1);
+    } else if (event.deltaY > 0) {
+      if (month < today.getMonth()) setMount(month + 1);
+    }
+  }
+
   return (
-    <div className="calendar-container">
-      <button className="calendar-button" onClick={() => setMount(month - 1)}>
+    <div onWheel={handleScroll} className="calendar-container">
+      <button className="calendar-button" onClick={() => {
+        if (month >= -222) setMount(month - 1);
+      }}>
         ▲
       </button>
       {months}

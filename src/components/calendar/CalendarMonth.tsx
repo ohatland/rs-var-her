@@ -62,7 +62,15 @@ export default function CalendarMonth({
                 {date + 1}
               </div>
             );
+          // } else if (currentDate.getTime() < today.getTime() - 612794741959) {
+          } else if (currentDate.getTime() < today.getTime() - 612831600000) {
+            return (
+              <div key={date} className="disabled">
+                {date + 1}
+              </div>
+            );
           } else {
+            // console.log('t', currentDate.getTime(), 'date', currentDate.getDate(), 'mounth', currentDate.getMonth(), 'diff', today.getTime()-currentDate.getTime())
             return (
               <div key={date} data-date={currentDate} className={isSelected ? 'selected' : ''} onClick={() => handleDateClick(currentDate)}>
                 {date + 1}
