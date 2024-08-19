@@ -6,7 +6,7 @@ import './Map.css';
 import { allShips, Ship } from '../../data/fartoy';
 
 export default function Map({ ship, shipTrack, handleShipSelect }: { ship: Ship; shipTrack: ShipPosition | null; handleShipSelect: (shipNr: string) => void }) {
-  const [mapLayer, setMapLayer] = useState(availableMapLayers[5].id);
+  const [mapLayer, setMapLayer] = useState(availableMapLayers[0].id);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapWidget | null>(null);
 

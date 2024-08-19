@@ -52,12 +52,19 @@ export class MapWidget {
     } else if (id === 'osm') {
       this.layer = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         minZoom: 5,
+        maxZoom: 18,
         attribution: '<a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      });
+    } else if (id === 'toporaster') {
+      this.layer = L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/toporaster/default/webmercator/{z}/{y}/{x}.png', {
+        minZoom: 5,
+        maxZoom: 18,
+        attribution: '<a href="https://www.kartverket.no/">Kartverket</a>',
       });
     } else {
       this.layer = L.tileLayer(`https://opencache{s}.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=${id}&zoom={z}&x={x}&y={y}`, {
         minZoom: 5,
-        maxZoom: 20,
+        maxZoom: 18,
         detectRetina: true,
         attribution: '<a href="https://www.kartverket.no/">Kartverket</a>',
         subdomains: ['', '2', '3'],
@@ -108,9 +115,9 @@ export class MapWidget {
     }
 
     if (shipTrack.length > 0) {
-      const lastPositionLat = shipTrack[shipTrack.length - 1].latitude;
-      const lastPositionLng = shipTrack[shipTrack.length - 1].longitude;
-      this.map.setView([lastPositionLat, lastPositionLng], 12);
+      const lastPositionLat = shipTrack[0].latitude;
+      const lastPositionLng = shipTrack[0].longitude;
+      this.map.setView([lastPositionLat, lastPositionLng], 14);
     }
 
     this.updateMarkerVisibility();
